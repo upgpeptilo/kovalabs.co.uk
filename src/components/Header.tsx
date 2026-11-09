@@ -4,23 +4,10 @@ import { asc } from "drizzle-orm";
 import { SHOP, LEARN } from "@/lib/nav";
 import { MobileMenu } from "./MobileMenu";
 import { CartButton } from "./CartButton";
+import { NavDropdown as Dropdown } from "./NavDropdown";
 
 export function Logo({ className = "" }: { className?: string }) {
   return <span className={`text-[1.7rem] font-semibold lowercase tracking-tight ${className}`}>kovalabs</span>;
-}
-
-function Dropdown({ title, links }: { title: string; links: { href: string; label: string }[] }) {
-  return (
-    // <details> keeps the menu working with no JS.
-    <details className="group relative">
-      <summary className="flex min-h-11 cursor-pointer list-none items-center gap-1 rounded-full px-4 font-medium group-open:bg-navy group-open:text-white [&::-webkit-details-marker]:hidden">
-        {title} <span className="text-xs transition group-open:rotate-180">▾</span>
-      </summary>
-      <div className="rise absolute left-0 top-12 z-50 w-64 rounded-3xl bg-card p-3 shadow-xl">
-        {links.map((l) => <Link key={l.href} href={l.href} className="flex min-h-11 items-center rounded-xl px-3 hover:bg-cream">{l.label}</Link>)}
-      </div>
-    </details>
-  );
 }
 
 export async function Header({ announcement }: { announcement: string }) {
