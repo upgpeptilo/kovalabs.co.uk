@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { requireAdmin } from "@/lib/admin";
 import { getSettings } from "@/lib/settings";
 import { gbp } from "@/lib/format";
+import { lineTotal } from "@/lib/pricing";
 import { PrintButton } from "./PrintButton";
 
 export default async function Receipt({ params }: PageProps<"/admin/orders/[number]/receipt">) {
@@ -20,7 +21,7 @@ export default async function Receipt({ params }: PageProps<"/admin/orders/[numb
       <p className="mt-6 text-sm"><strong>Bill to:</strong> {o.name}<br />{o.email}<br /><span className="whitespace-pre-line">{o.address}</span></p>
       <table className="mt-6 w-full text-sm">
         <thead><tr className="border-b border-line text-left"><th className="py-2">Item</th><th>Qty</th><th className="text-right">Price</th><th className="text-right">Total</th></tr></thead>
-        <tbody>{o.items.map((i) => <tr key={i.variantId} className="border-b border-line"><td className="py-2">{i.name}{i.label !== "Standard" && ` (${i.label})`}</td><td>{i.qty}</td><td className="text-right">{gbp(i.pricePence)}</td><td className="text-right">{gbp(i.pricePence * i.qty)}</td></tr>)}</tbody>
+        <tbody>{o.items.map((i) => <tr key={i.variantId} className="border-b border-line"><td className="py-2">{i.name}{i.label !== "Standard" && ` (${i.label})`}</td><td>{i.qty}</td><td className="text-right">{gbp(i.pricePence)}</td><td className="text-right">{gbp(lineTotal(i.pricePence, i.qty, i.discountPct))}</td></tr>)}</tbody>
       </table>
       <p className="mt-3 text-right text-lg font-bold">Total {gbp(o.totalPence)}</p>
       <p className="mt-1 text-right text-sm text-muted">Payment: {o.paymentMethodName} · Status: {o.status}</p>

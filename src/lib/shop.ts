@@ -9,11 +9,12 @@ export type ShopProduct = typeof products.$inferSelect & {
   inStock: boolean;
 };
 
-export async function listProducts(opts: { category?: string; best?: boolean; kinds?: string[]; q?: string; includeHidden?: boolean } = {}): Promise<ShopProduct[]> {
+export async function listProducts(opts: { category?: string; best?: boolean; kinds?: string[]; q?: string; slug?: string; includeHidden?: boolean } = {}): Promise<ShopProduct[]> {
   const where = [
     opts.includeHidden ? undefined : eq(products.published, true),
     opts.best ? eq(products.bestSeller, true) : undefined,
     opts.kinds ? inArray(products.kind, opts.kinds) : undefined,
+    opts.slug ? eq(products.slug, opts.slug) : undefined,
     opts.q ? ilike(products.name, `%${opts.q.replace(/[%_]/g, "")}%`) : undefined,
     opts.category ? eq(categories.slug, opts.category) : undefined,
   ].filter(Boolean);
@@ -34,5 +35,5 @@ export async function listProducts(opts: { category?: string; best?: boolean; ki
 }
 
 export async function getProduct(slug: string) {
-  return (await listProducts({ includeHidden: true })).find((p) => p.slug === slug && p.published);
+  return (await listProducts({ slug }))[0];
 }

@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { getSettings } from "@/lib/settings";
 import { orderText } from "@/lib/notify";
 import { gbp } from "@/lib/format";
+import { lineTotal } from "@/lib/pricing";
 
 export const metadata = { title: "Order confirmed", robots: { index: false } };
 
@@ -29,7 +30,7 @@ export default async function OrderPage({ params }: PageProps<"/order/[number]">
       </div>
       <div className="mt-8 rounded-3xl border border-line bg-white/60 p-5">
         <ul className="divide-y divide-line text-sm">
-          {o.items.map((i) => <li key={i.variantId} className="flex justify-between py-2"><span>{i.qty} × {i.name}{i.label !== "Standard" && ` (${i.label})`}</span><span>{gbp(i.pricePence * i.qty)}</span></li>)}
+          {o.items.map((i) => <li key={i.variantId} className="flex justify-between py-2"><span>{i.qty} × {i.name}{i.label !== "Standard" && ` (${i.label})`}</span><span>{gbp(lineTotal(i.pricePence, i.qty, i.discountPct))}</span></li>)}
         </ul>
         <p className="mt-3 flex justify-between border-t border-line pt-3 text-lg font-bold"><span>Total</span><span>{gbp(o.totalPence)}</span></p>
       </div>

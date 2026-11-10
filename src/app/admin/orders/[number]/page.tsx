@@ -5,6 +5,7 @@ import { db, orders } from "@/db";
 import { eq } from "drizzle-orm";
 import { requireAdmin } from "@/lib/admin";
 import { gbp } from "@/lib/format";
+import { lineTotal } from "@/lib/pricing";
 import { STATUSES } from "@/lib/statuses";
 
 export default async function AdminOrder({ params }: PageProps<"/admin/orders/[number]">) {
@@ -34,7 +35,7 @@ export default async function AdminOrder({ params }: PageProps<"/admin/orders/[n
         <Link href={`/admin/orders/${o.number}/receipt`} target="_blank" className="btn btn-line">Print receipt</Link>
       </form>
       <div className="mt-6 rounded-2xl border border-line bg-white p-4">
-        <ul className="divide-y divide-line text-sm">{o.items.map((i) => <li key={i.variantId} className="flex justify-between py-2"><span>{i.qty} × {i.name}{i.label !== "Standard" && ` (${i.label})`}</span><span>{gbp(i.pricePence * i.qty)}</span></li>)}</ul>
+        <ul className="divide-y divide-line text-sm">{o.items.map((i) => <li key={i.variantId} className="flex justify-between py-2"><span>{i.qty} × {i.name}{i.label !== "Standard" && ` (${i.label})`}</span><span>{gbp(lineTotal(i.pricePence, i.qty, i.discountPct))}</span></li>)}</ul>
         <p className="mt-2 flex justify-between border-t border-line pt-2 font-bold"><span>Total</span><span>{gbp(o.totalPence)}</span></p>
       </div>
       <dl className="mt-4 space-y-1 rounded-2xl border border-line bg-white p-4 text-sm">

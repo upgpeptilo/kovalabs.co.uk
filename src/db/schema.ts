@@ -53,7 +53,7 @@ export const orders = pgTable("orders", {
   phone: text("phone").notNull().default(""),
   address: text("address").notNull().default(""),
   notes: text("notes").notNull().default(""),
-  items: jsonb("items").$type<{ variantId: number; name: string; label: string; qty: number; pricePence: number }[]>().notNull(),
+  items: jsonb("items").$type<{ variantId: number; name: string; label: string; qty: number; pricePence: number; discountPct?: number }[]>().notNull(),
   totalPence: integer("total_pence").notNull(),
   paymentMethodId: integer("payment_method_id"),
   paymentMethodName: text("payment_method_name").notNull().default(""),

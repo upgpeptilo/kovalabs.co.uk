@@ -99,7 +99,7 @@ export function CheckoutForm({ methods, channels }: { methods: Method[]; channel
 
       <aside className="h-fit rounded-3xl bg-card p-5 lg:sticky lg:top-28">
         <h2 className="text-xl font-bold">Order summary</h2>
-        <ul className="mt-3 space-y-2 text-sm">{data.lines.map((l) => <li key={l.variantId} className="flex justify-between gap-3"><span>{l.qty} × {l.name}</span><span>{gbp(l.pricePence * l.qty)}</span></li>)}</ul>
+        <ul className="mt-3 space-y-2 text-sm">{data.lines.map((l) => <li key={l.variantId} className="flex justify-between gap-3"><span>{l.qty} × {l.name}</span><span>{gbp(l.totalPence)}</span></li>)}</ul>
         <p className="mt-4 flex justify-between border-t border-line pt-3 text-lg font-bold"><span>Total</span><span>{gbp(data.totalPence)}</span></p>
         {err && <p role="alert" className="mt-3 text-sm text-accent">{err}</p>}
         <button type="submit" disabled={busy} className="btn btn-navy mt-4 w-full">{busy ? "Placing order…" : CH[channel].submit}</button>

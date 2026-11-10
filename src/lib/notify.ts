@@ -1,15 +1,16 @@
 import nodemailer from "nodemailer";
 import type { Settings } from "./settings";
 import { gbp } from "./format";
+import { lineTotal } from "./pricing";
 
 export type OrderLike = {
   number: string; name: string; email: string; phone: string; address: string; notes: string;
-  items: { name: string; label: string; qty: number; pricePence: number }[];
+  items: { name: string; label: string; qty: number; pricePence: number; discountPct?: number }[];
   totalPence: number; paymentMethodName: string; channel: string;
 };
 
 export function orderText(o: OrderLike, siteUrl = "") {
-  const lines = o.items.map((i) => `${i.qty} x ${i.name}${i.label && i.label !== "Standard" ? ` (${i.label})` : ""} - ${gbp(i.pricePence * i.qty)}`);
+  const lines = o.items.map((i) => `${i.qty} x ${i.name}${i.label && i.label !== "Standard" ? ` (${i.label})` : ""} - ${gbp(lineTotal(i.pricePence, i.qty, i.discountPct))}${i.discountPct ? ` (${i.discountPct}% off)` : ""}`);
   const optional = (label: string, v: string) => (v ? [`${label}: ${v}`] : []);
   return [
     `New order ${o.number}`, "", ...lines, "", `Total: ${gbp(o.totalPence)}`, `Payment: ${o.paymentMethodName}`, "",

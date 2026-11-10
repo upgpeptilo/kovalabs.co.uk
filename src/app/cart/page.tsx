@@ -47,7 +47,7 @@ export default function Cart() {
                 <button type="button" className="text-sm underline" onClick={() => { setGone(l.variantId); setTimeout(() => { remove(l.variantId); setGone(null); }, 250); }}>Remove</button>
               </div>
             </div>
-            <p className="font-semibold">{gbp(l.pricePence * l.qty)}</p>
+            <p className="text-right font-semibold">{gbp(l.totalPence)}{l.discountPct > 0 && <span className="block text-xs font-normal text-accent">{l.discountPct}% off</span>}</p>
           </li>
         ))}
       </ul>

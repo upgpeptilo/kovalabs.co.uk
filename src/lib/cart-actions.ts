@@ -4,10 +4,11 @@ import { db, orders, variants, products, paymentMethods } from "@/db";
 import { and, eq, gte, inArray, sql } from "drizzle-orm";
 import { getSettings } from "./settings";
 import { notifyOrder, orderText } from "./notify";
+import { pctFor, lineTotal } from "./pricing";
 
 type In = { variantId: number; qty: number }[];
 
-export type Line = { variantId: number; qty: number; name: string; label: string; image: string; slug: string; pricePence: number; stock: number; ok: boolean };
+export type Line = { variantId: number; qty: number; name: string; label: string; image: string; slug: string; pricePence: number; stock: number; ok: boolean; discountPct: number; totalPence: number };
 
 // Server is the source of truth for price, name and stock; the browser sends only IDs and quantities.
 async function priceLines(input: In): Promise<Line[]> {
@@ -22,13 +23,14 @@ async function priceLines(input: In): Promise<Line[]> {
     const r = rows.find((x) => x.v.id === i.variantId);
     if (!r) return [];
     const qty = Math.max(1, Math.min(99, Math.floor(Number(i.qty)) || 1));
-    return [{ variantId: r.v.id, qty, name: r.p.name, label: r.v.label, image: r.p.images[0] ?? "", slug: r.p.slug, pricePence: r.v.pricePence, stock: r.v.stock, ok: r.v.stock >= qty }];
+    const discountPct = pctFor(r.p.slug, qty);
+    return [{ variantId: r.v.id, qty, name: r.p.name, label: r.v.label, image: r.p.images[0] ?? "", slug: r.p.slug, pricePence: r.v.pricePence, stock: r.v.stock, ok: r.v.stock >= qty, discountPct, totalPence: lineTotal(r.v.pricePence, qty, discountPct) }];
   });
 }
 
 export async function priceCart(input: In) {
   const lines = await priceLines(input);
-  return { lines, totalPence: lines.filter((l) => l.ok).reduce((n, l) => n + l.pricePence * l.qty, 0) };
+  return { lines, totalPence: lines.filter((l) => l.ok).reduce((n, l) => n + l.totalPence, 0) };
 }
 
 export async function checkoutInfo() {
@@ -55,8 +57,8 @@ export async function placeOrder(input: { items: In; name: string; email: string
   const bad = lines.find((l) => !l.ok);
   if (bad) return { ok: false, error: `${bad.name} is out of stock or has too few left. Please update your cart.` };
 
-  const items = lines.map((l) => ({ variantId: l.variantId, name: l.name, label: l.label, qty: l.qty, pricePence: l.pricePence }));
-  const totalPence = items.reduce((n, i) => n + i.pricePence * i.qty, 0);
+  const items = lines.map((l) => ({ variantId: l.variantId, name: l.name, label: l.label, qty: l.qty, pricePence: l.pricePence, discountPct: l.discountPct }));
+  const totalPence = lines.reduce((n, l) => n + l.totalPence, 0);
   const number = `ORD-${randomBytes(5).toString("hex").slice(0, 8).toUpperCase()}`;
 
   // ponytail: neon-http has no transactions. Stock is decremented with a guarded UPDATE per line, then the order row is written.
